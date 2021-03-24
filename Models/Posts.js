@@ -1,11 +1,10 @@
 import Sequelize from 'sequelize';
 
 import db from '../db/db.js';
-import Post from './Posts.js';
 
 const { DataTypes } = Sequelize;
 
-const User = db.define('user', {
+const Post = db.define('Post', {
   id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -13,21 +12,15 @@ const User = db.define('user', {
     autoIncrement: true,
     primaryKey: true,
   },
-  name: {
+  text: {
     type: DataTypes.STRING(45),
   },
-  handle: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  password: {
-    type: DataTypes.STRING(100),
+  ownerId: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 });
 
-// User.hasMany(Post);
-User.sync({ force: true });
+Post.sync({ force: true });
 
-export default User;
+export default Post;

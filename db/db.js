@@ -22,28 +22,3 @@ db.authenticate()
   });
 
 export default db;
-
-// const fakeDB = {
-//   data: [
-//     {
-//       id: 1,
-//       name: 'Pedro',
-//       handle: '@pedro',
-//       password: 'pedrop',
-//     },
-//     {
-//       id: 2,
-//       name: 'Sam',
-//       handle: '@sam',
-//       password: 'sami',
-//     },
-//     {
-//       id: 3,
-//       name: 'tina',
-//       handle: '@tina',
-//       password: 'tinat',
-//     },
-//   ],
-// };
-
-// export default fakeDB;
