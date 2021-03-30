@@ -1,14 +1,27 @@
-import graphqlTypes from 'graphql';
+import apolloServerPkg from 'apollo-server-express';
 
-const { GraphQLObjectType, GraphQLID, GraphQLString } = graphqlTypes;
+const { gql } = apolloServerPkg;
 
-const PostType = new GraphQLObjectType({
-  name: 'Post',
-  fields: () => ({
-    id: { type: GraphQLID },
-    text: { type: GraphQLString },
-    ownerId: { type: GraphQLID },
-  }),
-});
+export default gql`
+  type Post {
+    id: ID!
+    text: String
+    ownerId: ID!
+  }
 
-export default PostType;
+  type DeletePostMessage {
+    message: String
+  }
+
+  # Queries
+  extend type Query {
+    getAllPosts: [Post!]!
+    getOnePost(id: ID!): Post!
+  }
+
+  # Mutations
+  extend type Mutation {
+    createPost(id: ID!, text: String!): Post
+    deletePost(id: ID!): DeletePostMessage
+  }
+`;

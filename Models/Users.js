@@ -28,6 +28,6 @@ const User = db.define('user', {
 });
 
 // User.hasMany(Post);
-User.sync({ force: true });
+User.sync();
 
 export default User;

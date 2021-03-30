@@ -1,15 +1,33 @@
-import graphqlTypes from 'graphql';
+import apolloServerPkg from 'apollo-server-express';
 
-const { GraphQLObjectType, GraphQLID, GraphQLString } = graphqlTypes;
+const { gql } = apolloServerPkg;
 
-const UserType = new GraphQLObjectType({
-  name: 'User',
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    handle: { type: GraphQLString },
-    password: { type: GraphQLString },
-  }),
-});
+export default gql`
+  type User {
+    id: ID!
+    name: String!
+    handle: String!
+  }
 
-export default UserType;
+  type DeleteUserMessage {
+    message: String
+  }
+
+  input UserInfo {
+    name: String!
+    handle: String!
+    password: String!
+  }
+
+  # Queries
+  type Query {
+    getAllUsers: [User!]!
+    getOneUser(id: ID!): User!
+  }
+
+  # Mutations
+  type Mutation {
+    createUser(userInfo: UserInfo!): User!
+    deleteUser(id: ID!): DeleteUserMessage
+  }
+`;

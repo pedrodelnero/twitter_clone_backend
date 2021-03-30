@@ -21,6 +21,6 @@ const Post = db.define('Post', {
   },
 });
 
-Post.sync({ force: true });
+Post.sync();
 
 export default Post;

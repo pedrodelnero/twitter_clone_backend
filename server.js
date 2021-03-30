@@ -1,24 +1,27 @@
 import express from 'express';
 import cors from 'cors';
-import pkg from 'express-graphql';
+import pkgLoadsh from 'lodash';
+import apolloServerPkg from 'apollo-server-express';
 
-import schema from './Schema/index.js';
+import { postResolvers, userResolvers } from './Schema/Resolvers/index.js';
+import { postTypeDef, userTypeDef } from './Schema/TypeDefs/index.js';
 import { User, Post } from './Models/index.js';
 
-const { graphqlHTTP } = pkg;
+const { merge } = pkgLoadsh;
+const { ApolloServer } = apolloServerPkg;
 const port = process.env.PORT || 4000;
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(
-  '/graphql',
-  graphqlHTTP({
-    schema,
-    context: { User, Post },
-    graphiql: true,
-  })
-);
+
+const server = new ApolloServer({
+  typeDefs: [userTypeDef, postTypeDef],
+  resolvers: merge({}, userResolvers, postResolvers),
+  context: { User, Post },
+});
+
+server.applyMiddleware({ app });
 
 app.listen(port, () =>
   console.log(
