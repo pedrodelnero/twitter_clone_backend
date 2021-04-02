@@ -13,12 +13,6 @@ export default gql`
     message: String
   }
 
-  input UserInfo {
-    name: String!
-    handle: String!
-    password: String!
-  }
-
   # Queries
   type Query {
     getAllUsers: [User!]!
@@ -27,7 +21,8 @@ export default gql`
 
   # Mutations
   type Mutation {
-    createUser(userInfo: UserInfo!): User!
+    createUser(name: String!, handle: String!, password: String!): User!
     deleteUser(id: ID!): DeleteUserMessage
+    loginUser(handle: String!, password: String!): User
   }
 `;
