@@ -4,7 +4,7 @@ import db from '../db/db.js';
 
 const { DataTypes } = Sequelize;
 
-const Post = db.define('Post', {
+const UserFollower = db.define('UserFollower', {
   id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -12,16 +12,17 @@ const Post = db.define('Post', {
     autoIncrement: true,
     primaryKey: true,
   },
-  text: {
-    type: DataTypes.STRING(45),
+  followerId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
-  ownerId: {
+  followedId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
 });
 
-Post.sync();
-// Post.sync({ force: true });
+UserFollower.sync();
+// UserFollower.sync({ force: true });
 
-export default Post;
+export default UserFollower;

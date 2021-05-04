@@ -4,7 +4,7 @@ import db from '../db/db.js';
 
 const { DataTypes } = Sequelize;
 
-const Post = db.define('Post', {
+const Like = db.define('Like', {
   id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -12,16 +12,17 @@ const Post = db.define('Post', {
     autoIncrement: true,
     primaryKey: true,
   },
-  text: {
-    type: DataTypes.STRING(45),
+  postId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
-  ownerId: {
+  userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
 });
 
-Post.sync();
-// Post.sync({ force: true });
+Like.sync();
+// Like.sync({ force: true });
 
-export default Post;
+export default Like;

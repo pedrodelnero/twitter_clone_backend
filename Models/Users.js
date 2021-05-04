@@ -5,7 +5,7 @@ import Post from './Posts.js';
 
 const { DataTypes } = Sequelize;
 
-const User = db.define('user', {
+const User = db.define('User', {
   id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -29,5 +29,6 @@ const User = db.define('user', {
 
 // User.hasMany(Post);
 User.sync();
+// User.sync({ force: true });
 
 export default User;

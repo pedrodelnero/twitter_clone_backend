@@ -5,12 +5,17 @@ import apolloServerPkg from 'apollo-server-express';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 
-import { postResolvers, userResolvers } from './Schema/Resolvers/index.js';
-import { postTypeDef, userTypeDef } from './Schema/TypeDefs/index.js';
-import { User, Post } from './Models/index.js';
+import {
+  postResolvers,
+  userResolvers,
+  likeResolvers,
+  userFollowerResolvers,
+} from './Schema/Resolvers/index.js';
+import typeDefs from './Schema/TypeDefs/index.js';
+import { User, Post, Like, UserFollower } from './Models/index.js';
 
 const { merge } = pkgLoadsh;
-const { ApolloServer } = apolloServerPkg;
+const { ApolloServer, AuthenticationError } = apolloServerPkg;
 const port = process.env.PORT || 4000;
 
 var corsOptions = {
@@ -23,26 +28,44 @@ app.use(cookieParser());
 app.use(express.json());
 
 const server = new ApolloServer({
-  typeDefs: [userTypeDef, postTypeDef],
-  resolvers: merge({}, userResolvers, postResolvers),
+  typeDefs,
+  resolvers: merge(
+    {},
+    userResolvers,
+    postResolvers,
+    likeResolvers,
+    userFollowerResolvers
+  ),
   context: async ({ req, res }) => {
-    const token = req.cookies.token;
-    console.log('ctx start', token);
+    try {
+      const token = req.cookies.token;
+      if (!token) throw new Error('Not logged in.');
 
-    if (!token) return { User, Post, res };
+      const { id } = jwt.verify(token, process.env.JWT_SECRET);
 
-    const { id } = jwt.verify(token, process.env.JWT_SECRET);
+      if (!id) throw new Error('Not valid id.');
 
-    const user = await User.findOne({ id });
+      const user = await User.findOne({ where: { id } });
 
-    if (!user) throw new Error('No user found with this token');
+      if (!user) throw new AuthenticationError('No user found with this token');
 
-    return {
-      user,
-      User,
-      Post,
-      res,
-    };
+      return {
+        user,
+        User,
+        Post,
+        Like,
+        UserFollower,
+        res,
+      };
+    } catch (e) {
+      return {
+        User,
+        Post,
+        Like,
+        UserFollower,
+        res,
+      };
+    }
   },
 });
 

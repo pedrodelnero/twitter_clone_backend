@@ -26,3 +26,5 @@
 
 export { default as postResolvers } from './Post.js';
 export { default as userResolvers } from './User.js';
+export { default as likeResolvers } from './Like.js';
+export { default as userFollowerResolvers } from './UserFollower.js';
