@@ -9,6 +9,7 @@ const typeDefs = gql`
     handle: String!
     posts: [Post]
     likes: [Like]
+    followers: [UserFollower]
   }
 
   type UserFollower {
@@ -66,6 +67,11 @@ const typeDefs = gql`
     message: String
   }
 
+  type getUserFollowers {
+    followers: [UserFollower]
+    success: Boolean
+  }
+
   # Queries
   type Query {
     getAllUsers: [User!]!
@@ -80,8 +86,15 @@ const typeDefs = gql`
     getLikesByPost(postId: ID!): [Like!]!
     getLikesByUser: [Like]
 
-    userFollowers(followedId: ID!): [UserFollower]
+    userFollowers(followedId: ID!): getUserFollowers
     userFollowersAndFollowed: [UserFollower]
+  }
+
+  type CreateUserResponse {
+    success: Boolean!
+    message: String
+    user: User
+    token: String
   }
 
   type LoginUserResponse {
@@ -91,6 +104,16 @@ const typeDefs = gql`
     token: String
   }
 
+  type ToggleLikeResponse {
+    success: Boolean!
+    message: String
+  }
+
+  type ToggleFollowResponse {
+    success: Boolean!
+    message: String
+  }
+
   # Mutations
   type Mutation {
     createUser(
@@ -98,19 +121,16 @@ const typeDefs = gql`
       handle: String!
       password: String!
       confirmPassword: String!
-    ): User!
+    ): CreateUserResponse!
     deleteUser(id: ID!): DeleteMessage
     loginUser(handle: String!, password: String!): LoginUserResponse!
 
     createPost(text: String!): Post
     deletePost(id: ID!): DeleteMessage
 
-    createLike(postId: ID!): Like!
-    deleteLike(postId: ID!): DeleteMessage
+    toggleLike(postId: ID!): ToggleLikeResponse!
 
-    # change message
-    followUser(followedId: ID!): UserFollower
-    unfollowUser(followedId: ID!): DeleteMessage
+    toggleFollow(followedId: ID!): ToggleFollowResponse!
   }
 `;
 

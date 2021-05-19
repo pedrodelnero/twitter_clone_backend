@@ -15,10 +15,15 @@ const userResolvers = {
       });
       return likes;
     },
+    followers: async (parent, _, { UserFollower }) => {
+      const followers = await UserFollower.findAll({
+        where: { followedId: parent.id },
+      });
+      return followers;
+    },
   },
   Query: {
     getAllUsers: async (_, __, { User }) => {
-      console.log('getalluser START');
       const users = await User.findAll();
       return users;
     },
@@ -33,7 +38,6 @@ const userResolvers = {
           };
         }
       } catch (e) {
-        console.log('get One User | Catch');
         return {
           success: false,
           message: e.message,
@@ -41,7 +45,6 @@ const userResolvers = {
       }
     },
     isAuth: async (_, __, { user }) => {
-      console.log('isAuth, start');
       try {
         if (!user) {
           throw new Error('No user found with id.');
@@ -52,7 +55,6 @@ const userResolvers = {
           };
         }
       } catch (e) {
-        console.log('isAuth catch', e.message);
         return {
           success: false,
           message: e.message,
@@ -64,53 +66,51 @@ const userResolvers = {
     createUser: async (
       _,
       { name, handle, password, confirmPassword },
-      { User }
+      { User, res }
     ) => {
-      console.log('create user start', name, handle, password, confirmPassword);
-      if (!name || !handle || !password || !confirmPassword)
-        throw new Error('Missing input value');
+      try {
+        console.log('create user start', name);
+        if (!name || !handle || !password || !confirmPassword)
+          throw new Error('Missing input value');
 
-      if (password !== confirmPassword) {
-        console.log('Passwords do not match');
-        throw new Error('Passwords do not match');
-      }
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
 
-      const user = await User.findOne({ where: { handle } });
+        const user = await User.findOne({ where: { handle } });
 
-      if (user) {
-        throw new Error('Handle already taken');
-      } else {
-        const newUser = await User.create({
-          name,
-          handle,
-          password: bcrypt.hashSync(password, 8),
-        });
+        if (user) {
+          throw new Error('Handle already taken');
+        } else {
+          const newUser = await User.create({
+            name,
+            handle,
+            password: bcrypt.hashSync(password, 8),
+          });
 
-        const token = jwt.sign(
-          { id: user.dataValues.id.toString() },
-          process.env.JWT_SECRET
-        );
+          const token = jwt.sign(
+            { id: newUser.dataValues.id.toString() },
+            process.env.JWT_SECRET
+          );
 
-        res.cookie('token', token, {
-          maxAge: 4 * 60 * 60 * 1000,
-          httpOnly: true,
-        });
-        res.cookie('auth', user.dataValues.id, {
-          maxAge: 4 * 60 * 60 * 1000,
-        });
+          res.cookie('token', token, {
+            maxAge: 4 * 60 * 60 * 1000,
+            httpOnly: true,
+          });
+          res.cookie('auth', newUser.dataValues.id, {
+            maxAge: 4 * 60 * 60 * 1000,
+          });
 
-        return {
-          id: newUser.dataValues.id,
-          handle: newUser.dataValues.handle,
-          name: newUser.dataValues.name,
-        };
+          return { success: true, user: newUser };
+        }
+      } catch (e) {
+        return { success: false, message: e.message };
       }
     },
     deleteUser: async (_, { id }, { User, Post }) => {
       if (!id) throw new Error('Missing field');
 
       const user = await User.findOne({ where: { id } });
-      console.log(user);
 
       if (!user) {
         throw new Error('No user with id');
@@ -122,7 +122,6 @@ const userResolvers = {
       }
     },
     loginUser: async (_, { handle, password }, { User, res }) => {
-      console.log('start');
       try {
         if (!handle || !password) throw new Error('Missing field');
         const user = await User.findOne({ where: { handle } });
@@ -150,7 +149,7 @@ const userResolvers = {
             res.cookie('auth', user.dataValues.id, {
               maxAge: 4 * 60 * 60 * 1000,
             });
-            return { success: true, user, token };
+            return { success: true, user };
           }
         }
       } catch (e) {

@@ -8,22 +8,19 @@ const postResolvers = {
       const likes = await Like.findAll({
         where: { postId: parent.dataValues.id },
       });
-      // console.log('post - likes', likes);
       return likes;
     },
     user: async (parent, _, { User }) => {
-      // console.log('post - user 0', parent);
       const user = await User.findOne({
         where: { id: parent.dataValues.ownerId },
       });
-      // console.log('post - user', user);
       return user;
     },
   },
 
   Query: {
     posts: async (_, __, { Post }) => {
-      const posts = await Post.findAll();
+      const posts = await Post.findAll({ order: [['updatedAt', 'DESC']] });
       return posts;
     },
     getOnePost: async (_, { id }, { Post }) => {
@@ -51,27 +48,20 @@ const postResolvers = {
     },
     postsForFollower: async (_, { ownerId }, { UserFollower, user }) => {
       const userId = user.dataValues.id;
-      // console.log('pFF START user-id', userId);
-      // console.log('pFF START owner-id', ownerId);
+
       const pFFArr = await UserFollower.findAll({
         where: { [op.and]: [{ followedId: ownerId }, { followerId: userId }] },
       });
 
-      // console.log('pFF MID', !!pFFArr.length, +ownerId === +userId);
-
       if (!!pFFArr.length || +ownerId === userId) {
-        // console.log('pFF MID suc', pFFArr.length);
         return { success: true, message: 'User is following' };
       } else {
-        // console.log('pFF MID fail', pFFArr.length);
         return { success: false, message: 'User is not following' };
       }
     },
   },
   Mutation: {
     createPost: async (_, { text }, { Post, user }) => {
-      // console.log('POST 0');
-
       if (!user) {
         throw new Error('No user found with id.');
       } else {

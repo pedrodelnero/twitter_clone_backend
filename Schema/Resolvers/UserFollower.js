@@ -5,82 +5,81 @@ const op = Sequelize.Op;
 const userFollowerResolvers = {
   UserFollower: {
     followed: async (parent, _, { User }) => {
-      const user = await User.findOne({
-        where: { id: parent.dataValues.followedId },
-      });
-      return user;
+      try {
+        const user = await User.findOne({
+          where: { id: parent.dataValues.followedId },
+        });
+        return user;
+      } catch (err) {
+        console.log('followed query err', err);
+      }
     },
     follower: async (parent, _, { User }) => {
-      const user = await User.findOne({
-        where: { id: parent.dataValues.followerId },
-      });
-      return user;
+      try {
+        const user = await User.findOne({
+          where: { id: parent.dataValues.followerId },
+        });
+        return user;
+      } catch (err) {
+        console.log('follower query err', err);
+      }
     },
   },
   Query: {
     userFollowers: async (_, { followedId }, { UserFollower }) => {
-      // console.log('userFollowers START');
-      const users = await UserFollower.findAll({ where: { followedId } });
+      try {
+        const followers = await UserFollower.findAll({ where: { followedId } });
 
-      // console.log('userFollower MID -------');
-      return users;
+        if (followers.length === 0) return { success: false };
+
+        return { followers, success: true };
+      } catch (err) {
+        console.log('UF query err', err);
+      }
     },
     userFollowersAndFollowed: async (_, __, { Post, UserFollower, user }) => {
       const userId = user.dataValues.id;
-      console.log('uFF START', userId);
+
       const uFFArr = await UserFollower.findAll({
         where: { [op.or]: [{ followedId: userId }, { followerId: userId }] },
       });
       const posts = [];
       async function getPostsArray(item) {
-        console.log('get Post Array 0', item);
         const response = await Post.findAll({ where: { ownerId: item } });
-        console.log('get Post Array 1', response);
         const postsToPush = await response;
         posts.push(postsToPush);
       }
       await Promise.all(
         uFFArr.map((uFFItem) => {
           if (uFFItem.dataValues.followerId === user.dataValues.id) {
-            console.log('Follower');
             getPostsArray(uFFItem.dataValues.followedId);
           } else {
-            console.log('Followed');
           }
         })
       );
-      console.log('uFF MID', posts);
-      // console.log('userFollower MID -------');
       return users;
     },
   },
   Mutation: {
-    followUser: async (_, { followedId }, { UserFollower, user }) => {
-      // console.log('FOLLOWING', followedId);
-      if (!user) {
-        throw new Error('Not logged in.');
-      } else {
-        const newUserFollower = await UserFollower.create({
-          followedId,
-          followerId: user.dataValues.id,
+    toggleFollow: async (_, { followedId }, { UserFollower, user }) => {
+      try {
+        const found = await UserFollower.findOne({
+          where: { followedId, followerId: user.dataValues.id },
         });
-
-        return newUserFollower;
-      }
-    },
-    unfollowUser: async (_, { followedId }, { UserFollower, user }) => {
-      // console.log('UN-FOLLOWING', followedId, user);
-      const result = await UserFollower.destroy({
-        where: { followedId, followerId: user.dataValues.id },
-      });
-      if (!user) {
-        throw new Error('Not logged in.');
-      } else if (!result) {
-        throw new Error('Not following.');
-      } else {
-        await UserFollower.destroy({ where: { id: result.dataValues.id } });
-
-        return { message: 'Un-following' };
+        if (!found) {
+          await UserFollower.create({
+            followedId,
+            followerId: user.dataValues.id,
+          });
+          return { success: true, message: 'Following' };
+        } else {
+          await UserFollower.destroy({
+            where: { followedId: followedId, followerId: user.dataValues.id },
+          });
+          return { success: true, message: 'Un-following' };
+        }
+      } catch (e) {
+        return { success: false, message: e.message };
       }
     },
   },

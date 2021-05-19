@@ -13,6 +13,7 @@ import {
 } from './Schema/Resolvers/index.js';
 import typeDefs from './Schema/TypeDefs/index.js';
 import { User, Post, Like, UserFollower } from './Models/index.js';
+// import { db } from './Models';
 
 const { merge } = pkgLoadsh;
 const { ApolloServer, AuthenticationError } = apolloServerPkg;
@@ -71,6 +72,13 @@ const server = new ApolloServer({
 
 server.applyMiddleware({ app, path: '/graphql', cors: false });
 
+// db.sequelize.sync().then(() => {
+//   app.listen(port, () =>
+//     console.log(
+//       `Running a GraphQL API server at http://localhost:${port}/graphql`
+//     )
+//   );
+// });
 app.listen(port, () =>
   console.log(
     `Running a GraphQL API server at http://localhost:${port}/graphql`

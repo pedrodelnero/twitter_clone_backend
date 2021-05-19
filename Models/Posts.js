@@ -21,6 +21,16 @@ const Post = db.define('Post', {
   },
 });
 
+Post.associate = (models) => {
+  Posts.hasMany(models.Comments, {
+    onDelete: 'cascade',
+  });
+
+  Post.hasMany(models.Likes, {
+    onDelete: 'cascade',
+  });
+};
+
 Post.sync();
 // Post.sync({ force: true });
 
